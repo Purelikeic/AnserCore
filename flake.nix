@@ -32,7 +32,14 @@
         pkgs,
         system,
         ...
-      }: {
+      }: rec {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+          };
+        };
+
         # Per-system attributes can be defined here. The self' and inputs'
         # module parameters provide easy access to attributes of the same
         # system.
@@ -43,14 +50,50 @@
         devshells.default = {
           name = "ansercore-devshell";
 
+          imports = [
+            "${inputs.devshell}/extra/language/c.nix"
+          ];
+
           devshell.startup.pre-commit.text = config.pre-commit.installationScript;
 
           packages = [
             pkgs.reuse
-            pkgs.scalafix
 
             (pkgs.python3.withPackages (ps: with ps; [sphinx myst-parser furo]))
+
+            # Digital Design Toolchain
+            ##
+            ## Currently Verilator from Nixpkgs is not fully compatible with clang-tools since it built by GNU tools.
+            ## This can be fixed by override its build stdenv to clang, but we don't want compile it by ourselves.
+            ## See also: https://github.com/verilator/verilator/issues/4510
+            pkgs.surfer
+            pkgs.verilator
+
+            # C/C++ Toolchain
+            pkgs.bear
+            pkgs.clang-tools
+            pkgs.gdb
+            pkgs.llvm
+
+            # Chisel & Scala Toolchain
+            pkgs.circt
+            pkgs.espresso
+            (pkgs.mill.override {jre = pkgs.temurin-jre-bin-17;})
+            pkgs.metals
+            pkgs.scalafmt
+            pkgs.scalafix
+            pkgs.verible
           ];
+
+          language.c = {
+            compiler = pkgs.clang;
+            includes = [
+              pkgs.zlib
+            ];
+            libraries = [
+              pkgs.zlib
+            ];
+          };
 
           commands = [
             {
@@ -85,6 +128,7 @@
         treefmt = {
           programs.alejandra.enable = true;
           programs.autocorrect.enable = true;
+          programs.clang-format.enable = true;
           programs.mdformat.enable = true;
           programs.scalafmt = {
             enable = true;
