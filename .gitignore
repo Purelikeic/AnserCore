@@ -13,3 +13,7 @@ docs/html
 .mill
 
 compile_commands.json
+
+# VS Code workspace and local settings
+.vscode/
+*.code-workspace
