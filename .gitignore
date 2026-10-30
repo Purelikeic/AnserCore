@@ -1,6 +1,9 @@
 .envrc
 .direnv
 
+.vscode/
+*.code-workspace
+
 .pre-commit-config.yaml
 
 out
@@ -13,7 +16,3 @@ docs/html
 .mill
 
 compile_commands.json
-
-# VS Code workspace and local settings
-.vscode/
-*.code-workspace
