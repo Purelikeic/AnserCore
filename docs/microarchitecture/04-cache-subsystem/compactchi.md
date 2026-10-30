@@ -2,7 +2,7 @@
 
 ## 功能描述
 
-Compact CHI 协议环境为 ICache、DCache、PTW 和 UnCache 请求方提供统一的接口类型、参数和编码常量。它定义 REQ、EVT、RSP、DAT、SNP 五类 Flit，以及包含七个 ready/valid 通道的 `CompactChiRequesterIO`。
+Compact CHI 协议环境为 ICache、DCache、PTW 和 UnCache 请求方提供统一的接口类型、参数和编码常量。它定义 REQ、EVT、RSP、DAT、SNP 五类 Flit，以及包含七个 ready/valid 通道的 `CompactCHIRequesterIO`。
 
 协议环境只负责描述消息格式和基础编码辅助函数。缓存命中、MSHR、一致性状态、DBID 生命周期、CompAck 时机、Snoop 数据生成和请求重试由请求方控制器负责。
 
@@ -15,11 +15,11 @@ Compact CHI 协议环境为 ICache、DCache、PTW 和 UnCache 请求方提供统
 | DCache | `0b10` |
 | UnCache | `0b11` |
 
-NodeID 字段宽度仍由 `CompactChiParams` 参数决定。上述数值是系统集成约定，不改变协议字段宽度。
+NodeID 字段宽度仍由 `CompactCHIParams` 参数决定。上述数值是系统集成约定，不改变协议字段宽度。
 
 ## 参数描述
 
-协议参数由 `CompactChiParams` 定义。
+协议参数由 `CompactCHIParams` 定义。
 
 | 参数 | 默认值 | 含义 |
 | --- | --- | --- |
@@ -41,7 +41,7 @@ NodeID 字段宽度仍由 `CompactChiParams` 参数决定。上述数值是系�
 
 TagAlias 由具体 VIPT 请求方根据自身索引结构生成，协议环境不规定它对应哪些虚拟地址位。`tagAliasBits` 必须由 DCache 或其他上游 Cache 的参数显式传入，不能在协议包中假定固定值。REQ 和 SNP 使用同一 `tagAliasBits` 配置；配置为 0 表示系统不启用硬件别名维护。
 
-`Resp` 编码由 `CompactChiResp` 提供：
+`Resp` 编码由 `CompactCHIResp` 提供：
 
 | 常量 | 编码 |
 | --- | --- |
@@ -59,18 +59,18 @@ TagAlias 由具体 VIPT 请求方根据自身索引结构生成，协议环境�
 请求方使用：
 
 ```scala
-val port = IO(new CompactChiRequesterIO(c, wayBits))
+val port = IO(new CompactCHIRequesterIO(c, wayBits))
 ```
 
 | 端口 | 请求方方向 | Flit | TxnID 宽度 |
 | --- | --- | --- | --- |
-| `req` | 发出 | `CompactChiReqFlit` | `txnIdBits` |
-| `evt` | 发出 | `CompactChiEvtFlit` | `txnIdBits` |
-| `txRsp` | 发出 | `CompactChiUpRspFlit` | `dbidBits` |
-| `txDat` | 发出 | `CompactChiUpDatFlit` | `dbidBits` |
-| `rxRsp` | 接收 | `CompactChiDownRspFlit` | `txnIdBits`，另有 `dbID` |
-| `rxDat` | 接收 | `CompactChiDownDatFlit` | `txnIdBits`，另有 `dbID` |
-| `rxSnp` | 接收 | `CompactChiSnpFlit` | `dbidBits` |
+| `req` | 发出 | `CompactCHIReqFlit` | `txnIdBits` |
+| `evt` | 发出 | `CompactCHIEvtFlit` | `txnIdBits` |
+| `txRsp` | 发出 | `CompactCHIUpRspFlit` | `dbidBits` |
+| `txDat` | 发出 | `CompactCHIUpDatFlit` | `dbidBits` |
+| `rxRsp` | 接收 | `CompactCHIDownRspFlit` | `txnIdBits`，另有 `dbID` |
+| `rxDat` | 接收 | `CompactCHIDownDatFlit` | `txnIdBits`，另有 `dbID` |
+| `rxSnp` | 接收 | `CompactCHISnpFlit` | `dbidBits` |
 
 所有端口使用 ready/valid 握手。
 
@@ -85,7 +85,7 @@ SNP 的 `Addr` 是物理地址右移 3 位。SNP 扩展携带 `TagAlias`，表�
 请求方发出 ReadShared，接收完整 CompData 后使用数据消息中的 `DBID` 发送 CompAck。CompAck 的 TxnID 是 DBID，不是原请求 TxnID。
 
 ```scala
-port.txRsp.bits := CompactChiEdge.compAck(c, completion)
+port.txRsp.bits := CompactCHIEdge.compAck(c, completion)
 ```
 
 ReadUnique 和 MakeUnique 也可能需要 CompAck。ReadUnique 可以通过 RSP 返回无数据 Comp；ReadOnce、ReadNoSnp、CMO、Stash 和写请求不发送 CompAck。
@@ -95,15 +95,15 @@ ReadUnique 和 MakeUnique 也可能需要 CompAck。ReadUnique 可以通过 RSP 
 ReadOnce 在收齐 CompData 后结束，不发送 CompAck。收到 SNP 后，使用 SNP 的 TxnID 生成 SnpResp，源和目标对调：
 
 ```scala
-port.txRsp.bits := CompactChiEdge.snoopResponse(
+port.txRsp.bits := CompactCHIEdge.snoopResponse(
   c,
   port.rxSnp.bits,
-  resp = CompactChiResp.I,
-  respErr = CompactChiRespErr.NoError,
+  resp = CompactCHIResp.I,
+  respErr = CompactCHIRespErr.NoError,
 )
 ```
 
-需要返回数据时，控制器另外发送 `CompactChiUpDatFlit`，使用 `SnpRespData` 和 SNP 的 TxnID。
+需要返回数据时，控制器另外发送 `CompactCHIUpDatFlit`，使用 `SnpRespData` 和 SNP 的 TxnID。
 
 ### 非缓存写
 

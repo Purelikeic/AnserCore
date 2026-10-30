@@ -8,14 +8,14 @@ package anserl2.compactchi
 
 import chisel3._
 
-object CompactChiRespErr {
+object CompactCHIRespErr {
   val NoError = 0.U(2.W)
   val NDERR   = 3.U(2.W)
   val DERR    = 2.U(2.W)
 }
 
 /** Compact CHI Resp encodings from guide section 9.2.17. */
-object CompactChiResp {
+object CompactCHIResp {
   val I     = 0.U(3.W)
   val SC    = 1.U(3.W)
   val UC    = 2.U(3.W)
@@ -24,7 +24,7 @@ object CompactChiResp {
   val UC_PD = 6.U(3.W)
 }
 
-object CompactChiOpcode {
+object CompactCHIOpcode {
   object Evt {
     val Evict         = 0.U(1.W)
     val WriteBackFull = 1.U(1.W)

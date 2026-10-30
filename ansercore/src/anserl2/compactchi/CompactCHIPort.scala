@@ -10,7 +10,7 @@ import chisel3._
 import chisel3.util.Decoupled
 
 /** Compact CHI REQ flit independent of any cache implementation parameters. */
-class CompactChiReqFlit(c: CompactChiParams, wayBits: Int) extends Bundle {
+class CompactCHIReqFlit(c: CompactCHIParams, wayBits: Int) extends Bundle {
   require(wayBits >= 0, "Compact CHI Way width cannot be negative")
   val txnID        = UInt(c.txnIdBits.W)
   val srcID        = UInt(c.upstreamNodeIdBits.W)
@@ -31,7 +31,7 @@ class CompactChiReqFlit(c: CompactChiParams, wayBits: Int) extends Bundle {
 }
 
 /** Compact CHI EVT flit independent of any cache implementation parameters. */
-class CompactChiEvtFlit(c: CompactChiParams, wayBits: Int) extends Bundle {
+class CompactCHIEvtFlit(c: CompactCHIParams, wayBits: Int) extends Bundle {
   require(wayBits >= 0, "Compact CHI Way width cannot be negative")
   val txnID    = UInt(c.txnIdBits.W)
   val srcID    = UInt(c.upstreamNodeIdBits.W)
@@ -46,7 +46,7 @@ class CompactChiEvtFlit(c: CompactChiParams, wayBits: Int) extends Bundle {
 }
 
 /** Compact CHI upstream RSP flit emitted by a Requester. */
-class CompactChiUpRspFlit(c: CompactChiParams) extends Bundle {
+class CompactCHIUpRspFlit(c: CompactCHIParams) extends Bundle {
   val txnID    = UInt(c.dbidBits.W)
   val srcID    = UInt(c.upstreamNodeIdBits.W)
   val tgtID    = UInt(c.downstreamNodeIdBits.W)
@@ -57,7 +57,7 @@ class CompactChiUpRspFlit(c: CompactChiParams) extends Bundle {
 }
 
 /** Compact CHI upstream DAT flit emitted by a Requester. */
-class CompactChiUpDatFlit(c: CompactChiParams) extends Bundle {
+class CompactCHIUpDatFlit(c: CompactCHIParams) extends Bundle {
   val txnID      = UInt(c.dbidBits.W)
   val srcID      = UInt(c.upstreamNodeIdBits.W)
   val tgtID      = UInt(c.downstreamNodeIdBits.W)
@@ -71,7 +71,7 @@ class CompactChiUpDatFlit(c: CompactChiParams) extends Bundle {
 }
 
 /** Compact CHI downstream RSP flit received by a Requester. */
-class CompactChiDownRspFlit(c: CompactChiParams) extends Bundle {
+class CompactCHIDownRspFlit(c: CompactCHIParams) extends Bundle {
   val txnID    = UInt(c.txnIdBits.W)
   val srcID    = UInt(c.downstreamNodeIdBits.W)
   val tgtID    = UInt(c.upstreamNodeIdBits.W)
@@ -84,7 +84,7 @@ class CompactChiDownRspFlit(c: CompactChiParams) extends Bundle {
 }
 
 /** Compact CHI downstream DAT flit received by a Requester. */
-class CompactChiDownDatFlit(c: CompactChiParams) extends Bundle {
+class CompactCHIDownDatFlit(c: CompactCHIParams) extends Bundle {
   val txnID      = UInt(c.txnIdBits.W)
   val srcID      = UInt(c.downstreamNodeIdBits.W)
   val tgtID      = UInt(c.upstreamNodeIdBits.W)
@@ -100,7 +100,7 @@ class CompactChiDownDatFlit(c: CompactChiParams) extends Bundle {
 }
 
 /** Compact CHI SNP flit received by a Requester. */
-class CompactChiSnpFlit(c: CompactChiParams) extends Bundle {
+class CompactCHISnpFlit(c: CompactCHIParams) extends Bundle {
   val txnID    = UInt(c.dbidBits.W)
   val srcID    = UInt(c.downstreamNodeIdBits.W)
   val tgtID    = UInt(c.upstreamNodeIdBits.W)
@@ -112,12 +112,12 @@ class CompactChiSnpFlit(c: CompactChiParams) extends Bundle {
 }
 
 /** All channels visible at a Compact CHI Requester endpoint. */
-class CompactChiRequesterIO(c: CompactChiParams, wayBits: Int) extends Bundle {
-  val req   = Decoupled(new CompactChiReqFlit(c, wayBits))
-  val evt   = Decoupled(new CompactChiEvtFlit(c, wayBits))
-  val txRsp = Decoupled(new CompactChiUpRspFlit(c))
-  val txDat = Decoupled(new CompactChiUpDatFlit(c))
-  val rxRsp = Flipped(Decoupled(new CompactChiDownRspFlit(c)))
-  val rxDat = Flipped(Decoupled(new CompactChiDownDatFlit(c)))
-  val rxSnp = Flipped(Decoupled(new CompactChiSnpFlit(c)))
+class CompactCHIRequesterIO(c: CompactCHIParams, wayBits: Int) extends Bundle {
+  val req   = Decoupled(new CompactCHIReqFlit(c, wayBits))
+  val evt   = Decoupled(new CompactCHIEvtFlit(c, wayBits))
+  val txRsp = Decoupled(new CompactCHIUpRspFlit(c))
+  val txDat = Decoupled(new CompactCHIUpDatFlit(c))
+  val rxRsp = Flipped(Decoupled(new CompactCHIDownRspFlit(c)))
+  val rxDat = Flipped(Decoupled(new CompactCHIDownDatFlit(c)))
+  val rxSnp = Flipped(Decoupled(new CompactCHISnpFlit(c)))
 }
